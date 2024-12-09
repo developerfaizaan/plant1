@@ -6,3 +6,8 @@ opencv-python>=4.7.0.68
 matplotlib>=3.3.2
 scikit-learn>=0.9
 flask>=1.1.2
+streamlit
+tensorflow
+opencv-python  # Use this if the application has access to a display
+# opencv-python-headless  # Use this if the application is running in a headless environment (e.g., servers without GUI)
+numpy
