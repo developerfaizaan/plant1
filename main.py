@@ -1,8 +1,15 @@
 import streamlit as st
-import cv2 as cv
 import numpy as np
 from tensorflow.keras.models import load_model
 
+# Attempt to import OpenCV
+try:
+    import cv2 as cv
+except ImportError as e:
+    st.error("OpenCV (cv2) is not installed. Please install it using 'pip install opencv-python' or 'pip install opencv-python-headless' for headless environments.")
+    raise e
+
+# Labels for the model's predictions
 label_name = [
     'Apple scab', 'Apple Black rot', 'Apple Cedar apple rust', 'Apple healthy', 'Cherry Powdery mildew',
     'Cherry healthy', 'Corn Cercospora leaf spot Gray leaf spot', 'Corn Common rust', 
@@ -15,6 +22,7 @@ label_name = [
     'Tomato Yellow Leaf Curl Virus', 'Tomato mosaic virus', 'Tomato healthy'
 ]
 
+# Streamlit app header
 st.title("Leaf Disease Detection")
 st.markdown("### Upload an image of a leaf to detect its disease.")
 
@@ -23,21 +31,31 @@ The leaf disease detection model is built using deep learning techniques, and it
 Please input only leaf images of Apple, Cherry, Corn, Grape, Peach, Pepper, Potato, Strawberry, and Tomato.
 """)
 
-model = load_model('Training/model/Leaf Deases(96,88).h5')
+# Load the pre-trained model
+try:
+    model = load_model('Training/model/Leaf Deases(96,88).h5')
+except Exception as e:
+    st.error("Model file not found or failed to load. Ensure the model file exists at 'Training/model/Leaf Deases(96,88).h5'.")
+    raise e
 
+# File uploader for the image
 uploaded_file = st.file_uploader("Upload an image", type=['jpg', 'jpeg', 'png'])
 if uploaded_file is not None:
     try:
+        # Read and process the image
         image_bytes = uploaded_file.read()
         img = cv.imdecode(np.frombuffer(image_bytes, dtype=np.uint8), cv.IMREAD_COLOR)
         if img is None:
             raise ValueError("The file is not a valid image.")
-        
+
         img_resized = cv.resize(cv.cvtColor(img, cv.COLOR_BGR2RGB), (150, 150))
         normalized_image = np.expand_dims(img_resized, axis=0) / 255.0
         predictions = model.predict(normalized_image)
-        st.image(image_bytes, caption="Uploaded Image", use_column_width=True)
         
+        # Display the uploaded image
+        st.image(image_bytes, caption="Uploaded Image", use_column_width=True)
+
+        # Show prediction results
         max_index = np.argmax(predictions)
         confidence = predictions[0][max_index] * 100
         if confidence >= 80:
@@ -45,4 +63,4 @@ if uploaded_file is not None:
         else:
             st.warning("Unable to confidently identify the disease. Try another image.")
     except Exception as e:
-        st.error(f"An error occurred: {e}")
+        st.error(f"An error occurred while processing the image: {e}")
