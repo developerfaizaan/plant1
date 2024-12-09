@@ -1,7 +1,15 @@
 import streamlit as st
-import cv2 as cv
 import numpy as np
 from tensorflow.keras.models import load_model
+
+# Attempt to import OpenCV
+try:
+    import cv2 as cv
+except ImportError as e:
+    st.error(
+        "OpenCV is not installed. Please install it using 'pip install opencv-python' or 'pip install opencv-python-headless' for headless environments."
+    )
+    raise e
 
 # Labels for the model's predictions
 label_name = [
